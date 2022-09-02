@@ -1,10 +1,9 @@
 // ignore_for_file: avoid_print
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as devtools show log;
 
-import '../firebase_options.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -61,27 +60,27 @@ class _LoginViewState extends State<LoginView> {
                   final email = _email.text;
                   final password = _password.text;
                   try{
-                    final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                    await FirebaseAuth.instance.signInWithEmailAndPassword(
                     email: email, 
                     password: password
                     );
-                    print(userCredential);
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/notes/', 
+                      (route) => false,
+                      );
                   } on FirebaseAuthException catch(e){
                     // ignore: avoid_print
                     if(e.code == "user-not-found"){
-                      print("User Not Found");
+                      devtools.log("User Not Found");
                     }else if (e.code == "wrong-password"){
-                      print("Wrong Password");
+                      devtools.log("Wrong Password");
                     }
                     else{
-                      print("Something else happened to this code");
-                      print(e.code);
+                      devtools.log("Something else happened to this code");
+                      devtools.log(e.code);
                     }
                   }
-                  // catch(e){
-                  //   print("Cannot find the user");
-                  //   print(e.runtimeType);
-                  // }
                   
                 },
                 // ignore: avoid_print

@@ -25,6 +25,7 @@ void main() {
       routes: {
         '/login/':(context) => const LoginView(),
         '/register/':(context) => const RegisterView(),
+        '/notes/':(context) => const NotesView(),
       },
     ));
 }
@@ -81,6 +82,7 @@ class NotesView extends StatelessWidget {
                   final shouldLogout = await showLogoutDialog(context);
                   if(shouldLogout){
                     await FirebaseAuth.instance.signOut();
+                    // ignore: use_build_context_synchronously
                     Navigator.of(context).pushNamedAndRemoveUntil(
                       '/login/', 
                     (route) => false,
