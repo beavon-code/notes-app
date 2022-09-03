@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -64,11 +64,13 @@ class _RegisterViewState extends State<RegisterView> {
                   final email = _email.text;
                   final password = _password.text;
                   try{
-                    final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                    await FirebaseAuth.instance.createUserWithEmailAndPassword(
                     email: email, 
                     password: password
                     );
-                    devtools.log(userCredential.toString());
+                    final user = FirebaseAuth.instance.currentUser;
+                    await user?.sendEmailVerification();
+                    Navigator.of(context).pushNamed(verifyEmailRoutes);
                   }on FirebaseAuthException catch(e){
                     if(e.code == 'weak-password'){
                       await showErrorDialog(
@@ -105,14 +107,16 @@ class _RegisterViewState extends State<RegisterView> {
                 
         
                 ),
-                TextButton(onPressed: (){
+                TextButton(
+                  onPressed: (){
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     loginRoutes, 
                   (route) => false,
                   );
                 }, 
                 child: const Text('Already have an account? Login')
-                )
+                ),
+                
               ],
               ),
     );
