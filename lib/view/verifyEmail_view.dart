@@ -1,10 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../constant/routes.dart';
 
 class VerifyEmail extends StatelessWidget {
   const VerifyEmail({Key? key}) : super(key: key);
+  
+  
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +21,9 @@ class VerifyEmail extends StatelessWidget {
             const Text("If you haven't recieved the email verification,  please press the button below."),
             TextButton(onPressed: () async {
               final user = FirebaseAuth.instance.currentUser;
-              await user?.sendEmailVerification();
+              if(user != null){
+                await user.sendEmailVerification();
+              }
             }, 
             child: const Text('send email verification')
             ),
