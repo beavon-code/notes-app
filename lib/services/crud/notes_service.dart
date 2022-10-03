@@ -10,15 +10,20 @@ class NotesService {
   Database? _db;
 
   static final _shared = NotesService._sharedInstance();
-  NotesService._sharedInstance();
+  NotesService._sharedInstance() {
+    _notesStreamController = StreamController<List<DatabaseNotes>>.broadcast(
+      onListen: () {
+        _notesStreamController.sink.add(_notes);
+      },
+    );
+  }
   factory NotesService() => _shared;
 
   List<DatabaseNotes> _notes = [];
 
   Stream<List<DatabaseNotes>> get allNotes => _notesStreamController.stream;
 
-  final _notesStreamController =
-      StreamController<List<DatabaseNotes>>.broadcast();
+  late final _notesStreamController;
 
   Future<DatabaseUser> getOrCreateUser({required email}) async {
     await _ensureDbIsOpen();
@@ -179,7 +184,7 @@ class NotesService {
     final userId = await db.insert(
       userTable,
       {
-        emailColumn: email.toLowerCase(),
+        emailColumn: [email.toLowerCase()],
       },
     );
     return DatabaseUser(
@@ -222,7 +227,7 @@ class NotesService {
 
       await db.execute(createUserTable);
 
-      await db.execute(createNotesTable);
+      await db.execute(createNoteTable);
       await _cacheNotes();
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentDirectoryException();
@@ -288,7 +293,12 @@ class DatabaseNotes {
       : id = map[idColumn] as int,
         userId = map[userIdColumn] as int,
         text = map[textColumn] as String,
-        isSyncedWithCloud = map[isSyncedWithCloudColumn] == 1 ? true : false;
+        isSyncedWithCloud = (map[isSyncedWithCloudColumn]) == 1 ? true : false;
+
+  @override
+  String toString() {
+    return 'Note ID=$id, userId=$userId, isSyncedWithCloud=$isSyncedWithCloud';
+  }
 
   @override
   bool operator ==(covariant DatabaseNotes other) => id == other.id;
@@ -310,9 +320,9 @@ const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
 	"email"	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );''';
-const createNotesTable = '''CREATE TABLE IF NOT EXISTS "notes" (
+const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
 	"id"	INTEGER NOT NULL UNIQUE,
-	"text"	TEXT NOT NULL,
+	"text"	TEXT,
 	"user_id"	INTEGER NOT NULL,
 	"is_synced_with_cloud"	INTEGER DEFAULT 0,
 	PRIMARY KEY("id" AUTOINCREMENT),
